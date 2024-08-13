@@ -35,7 +35,6 @@ body {
   border-radius: 8px;
   z-index: 10;
 }
-/* padding: 0px 50px 50px 0px; */
 
 #continueButton {
   margin-top: 10px;
@@ -53,24 +52,28 @@ body {
 #shapeSelector {
   margin-top: 20px;
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: center;
   font-size: 18px;
   font-weight: bold;
 }
 
+
+#continueButton:disabled {
+  background-color: #5790cd;
+}
 
 #continueButton:hover {
   background-color: #0056b3;
 }
 
 #shapeSelector {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
+  margin-bottom: 20px;
   align-items: center;
-  font-size: 18px;
+  font-size: 700;
   font-weight: bold;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .grid {
@@ -80,25 +83,6 @@ body {
   align-items: center;
   justify-items: center;
 }
-
-/* .grid {
-  display: grid;
-  grid-template-columns: repeat(4, 95px);
-  grid-template-rows: repeat(4, 95px);
-  align-items: start;
-  justify-items: start;
-  align-content: space-evenly;
-  justify-content: center;
-} */
-
-/* .grid {
-  display: grid;
-  grid-template-columns: repeat(4, 95px);
-  grid-template-rows: repeat(4, 95px);
-  justify-items: end;
-  align-items: end;
-  justify-content: space-between;
-} */
 
 .shape {
   width: 40px;   /* Size of each shape */
@@ -129,4 +113,38 @@ body {
 
 .square {
   /* background-color: lightcoral; */
+}
+
+.passed-group {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  align-items: center;
+}
+
+.passed-img {
+  border-radius: 50%;
+}
+
+.passed-text {
+  color: #2ecc71;
+  font-size: 32px;
+  font-family: monospace;
+}
+
+.failed-group {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  flex-direction: column;
+}
+
+.failed-text {
+  color: #e74c3c;
+  font-size: 32px;
+  font-family: monospace;
+}
+
+.mb-3{
+  margin-top: 2rem;
 }
