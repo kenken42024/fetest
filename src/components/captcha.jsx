@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import '../App.css';
 
-function Captcha({handleValidated})	 {
+function Captcha({handleValidated, maxAttempts})	 {
 	// const [mouseMovement, setMouseMovement] = useState(0);
     const [isScreenshotTaken, setIsScreenshotTaken] = useState(false);
     const videoRef = useRef(null);
@@ -10,43 +10,35 @@ function Captcha({handleValidated})	 {
 	const [pointsLocation, setPointsLocation] = useState([])
 	const [clickedPoints, setClickedPoints] = useState([])
 	const [xClickedPoints, setXClickedPoints] = useState([])
-	const [attempts, setAttempts] = useState(0);
-	const [maxAttempts, setMaxAttempts] = useState(3); // Maximum allowed attempts
 	const [isValidated, setIsValidated] = useState(null)
 
 	useEffect(() => {
-		// Allow camera to start video stream for screenshot use
-		const video = videoRef.current;
-        const randomBox = randomBoxRef.current;
+		const blockUntilCookie = getCookie('blockUntil');
+		let blockUntil = blockUntilCookie ? new Date(blockUntilCookie) : null;
 
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then((stream) => {
-                    video.srcObject = stream;
-                })
-                .catch((error) => {
-                    console.error('Error accessing the camera:', error);
-                });
-        } else {
-            console.error('Camera error');
-        }
-		
-		positionRandomBox(randomBox);
+		// Check if the user is currently blocked
+		if (blockUntil && new Date() < blockUntil) {
+			// User is blocked
+			handleValidated(0, 3)
+		} else {
+			// User is not blocked, allow camera to start video stream for screenshot use
+			const video = videoRef.current;
+			const randomBox = randomBoxRef.current;
 
-		const canvas = document.getElementById('screenshotCanvas');
-
-        // // Function to handle mouse movement
-        // function handleMouseMove(event) {
-        //     // Get the mouse position relative to the canvas
-        //     const rect = canvas.getBoundingClientRect();
-        //     const x = event.clientX - rect.left;
-        //     const y = event.clientY - rect.top;
-
-		// 	setMouseMovement({x, y})
-        // }
-
-        // // Attach the event listener to the canvas
-        // canvas.addEventListener('mousemove', handleMouseMove);
+			if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+				navigator.mediaDevices.getUserMedia({ video: true })
+					.then((stream) => {
+						video.srcObject = stream;
+					})
+					.catch((error) => {
+						console.error('Error accessing the camera:', error);
+					});
+			} else {
+				console.error('Camera error');
+			}
+			
+			positionRandomBox(randomBox);
+		}
 	}, [])
 
 	useEffect(() => {
@@ -72,10 +64,6 @@ function Captcha({handleValidated})	 {
             clearInterval(intervalId);
         };
 	}, [isScreenshotTaken])
-
-	useEffect(() => {
-		handleValidated(isValidated, maxAttempts, attempts)
-	}, [attempts])
 
 	const addShapes = () => {
         const randomBox = document.getElementById('randomBox');
@@ -205,9 +193,7 @@ function Captcha({handleValidated})	 {
 			const currentShape = document.getElementById('shape').innerText
 
 			// Check if the current shape matches the selected shape type and color
-			console.log(currentColor.toLowerCase(), currentShape.toLowerCase())
 			if (shapeType === currentShape.toLowerCase() && color === currentColorRGB) {
-				console.log(x, y);
 				setPointsLocation(prevPoints => [...prevPoints, {type: currentShape.toLowerCase(), size: size, x, y }]);
 			}
 		});
@@ -255,7 +241,7 @@ function Captcha({handleValidated})	 {
 		const y = event.clientY - rect.top;
 		const clickedPoint = { x, y };
 
-		console.log('Clicked position:', clickedPoint);
+		// console.log('Clicked position:', clickedPoint);
 
 		// Check if the clicked point is within any shape in pointsLocation
 		const shapeClicked = pointsLocation.find(shape => {
@@ -340,7 +326,7 @@ function Captcha({handleValidated})	 {
 		area2 = Math.abs((x1 * (point.y - y3) + point.x * (y3 - y1) + x3 * (y1 - point.y)) / 2);
 		area3 = Math.abs((x1 * (y2 - point.y) + x2 * (point.y - y1) + point.x * (y1 - y2)) / 2);
 		
-		console.log((area1 + area2 + area3).toFixed(0), areaOrig)
+		// console.log((area1 + area2 + area3).toFixed(0), areaOrig)
 		// Check if the point is inside the triangle
 		return (area1 + area2 + area3).toFixed(0) === areaOrig.toFixed(0);
 	};
@@ -349,38 +335,33 @@ function Captcha({handleValidated})	 {
 		const result = document.getElementById('result');
 		const blockUntilCookie = getCookie('blockUntil');
 		let blockUntil = blockUntilCookie ? new Date(blockUntilCookie) : null;
-		let attemp = attempts
+	
+		// Retrieve the attempts value from cookies
+		let attemp = parseInt(getCookie('attempts')) || 0;
 	
 		// Check if the user is currently blocked
 		if (blockUntil && new Date() < blockUntil) {
-			result.textContent = `You are blocked! Try again after ${new Date(blockUntil).toLocaleTimeString()}.`;
-			result.style.color = 'orange';
 			return;
 		}
 	
 		if (clickedPoints.length > 0 && clickedPoints.length === pointsLocation.length && xClickedPoints.length <= 0) {
-			result.textContent = 'CAPTCHA passed!';
-			result.style.color = 'green';
 			deleteCookie('blockUntil'); // Reset block status on success
-			setAttempts(0);
-			setIsValidated(1)
+			deleteCookie('attempts'); // Reset attempts on success
+			setIsValidated(1);
+			handleValidated(1, attemp);
 		} else {
 			attemp++;
-			result.textContent = `CAPTCHA failed! Attempt ${attemp}/${maxAttempts}. Try again.`;
-			result.style.color = 'red';
+			setCookie('attempts', attemp, 5); // Store the updated attempts value
 	
 			if (attemp >= maxAttempts) {
 				blockUntil = new Date(new Date().getTime() + 5 * 60 * 1000); // Block for 5 minutes
 				setCookie('blockUntil', blockUntil.toUTCString(), 5);
-				result.textContent = `CAPTCHA failed! You are blocked for 5 minutes.`;
-				result.style.color = 'red';
 			}
-			setIsValidated(0)
-
+	
+			setIsValidated(0);
+			handleValidated(0, attemp);
 		}
-		
-		setAttempts(attemp)
-	};
+	};	
 
 	const handleContinue = () => {
 		setPointsLocation([])
@@ -467,7 +448,6 @@ function Captcha({handleValidated})	 {
 				{/* Random Shapes Container */}
 				<canvas ref={screenshotCanvasRef} onClick={handleCanvasClick} id="screenshotCanvas" className='screenshot' style={{ 'display': isScreenshotTaken ? 'unset' : 'none' }}></canvas>
 				<div className="grid" ref={randomBoxRef} id="randomBox" style={{ display: isScreenshotTaken ? 'none' : ''}}></div>
-				{/* <div className="grid" ref={randomBoxRef} id="randomBox"></div> */}
 				
 				{/* Camera stream */}
                 <video ref={videoRef} autoPlay playsInline style={{ 'display': !isScreenshotTaken ? 'unset' : 'none' }}></video>
@@ -476,19 +456,17 @@ function Captcha({handleValidated})	 {
 			{
 				isScreenshotTaken
 				?	<div className='gap-2'>
+						<button disabled={clickedPoints.length <= 0 && xClickedPoints.length <= 0 } onClick={validateCaptcha} id="continueButton">Validate</button>&nbsp;
 						{
 							isValidated === null && pointsLocation.length > 1
-							? <button disabled={clickedPoints.length <= 0 && xClickedPoints.length <= 0 } onClick={validateCaptcha} id="continueButton">Validate</button>
+							?	<></>
 							: 	<>
-									<button disabled={clickedPoints.length <= 0 && xClickedPoints.length <= 0 } onClick={validateCaptcha} id="continueButton">Validate</button>&nbsp;
 									<button onClick={() => { handleRetry() }} id="continueButton">{ pointsLocation.length > 1 ? "Retry" : "Skip" }</button>
 								</>
 						}
 					</div>
 				:	<button onClick={handleContinue} id="continueButton">Continue</button>
 			}
-
-			<p id="result"></p>
         </>
     );
 }

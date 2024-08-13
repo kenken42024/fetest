@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Captcha from './components/captcha';
 import Result from './components/results';
 import './App.css';
@@ -7,14 +7,19 @@ function App() {
 	const [result, setResult] = useState(null)
 	const [attempts, setAttempts] = useState(0);
 	const [maxAttempts, setMaxAttempts] = useState(3); // Maximum allowed attempts
-	const handleResults = () => {
-		console.log('validated')
-	}
+	const [blocked, setBlocked] = useState(false); 
 
-	const handleValidation = (v, max, n) => {
-		console.log('app result >>>', v, max, n)
+	useEffect(() => {
+		if(attempts >= maxAttempts) {
+			setBlocked(true)
+			setResult(0)
+		} else {
+			setBlocked(false)
+		}
+	}, [attempts])
+
+	const handleValidation = (v, n) => {
 		setResult(v)
-		setMaxAttempts(max)
 		setAttempts(n)
 	}
 
@@ -31,10 +36,11 @@ function App() {
 						maxAttempts={maxAttempts}
 						attempts={attempts}
 						handleRetry={handleRetry}
+						isBlocked={blocked}
 					/>
 				:	<Captcha
-						handleResults={handleResults} 
 						handleValidated={handleValidation}
+						maxAttempts={maxAttempts}
 					/>
 			}
         </>
