@@ -66,45 +66,79 @@ function Captcha({handleValidated, maxAttempts})	 {
 	}, [isScreenshotTaken])
 
 	const addShapes = () => {
-        const randomBox = document.getElementById('randomBox');
-        randomBox.innerHTML = '';
-
-        const shapes = ['circle', 'triangle', 'square'];
-        const colors = ['red', 'blue', 'green']; // Add more colors if needed
-
-        // Randomly choose the target shape and color for the CAPTCHA
-        const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
-        const targetColor = colors[Math.floor(Math.random() * colors.length)];
-
-        // Randomly assign shapes and colors to the 4x4 grid
-        for (let i = 0; i < 16; i++) { // 4x4 grid means 16 items
-            const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            const shapeElement = document.createElement('div');
-            shapeElement.classList.add('shape', randomShape);
-            if(randomShape === 'triangle') {
-				shapeElement.style.borderBottom = "40px solid "+randomColor;
-			} else {
-				shapeElement.style.backgroundColor = randomColor;
+		const randomBox = document.getElementById('randomBox');
+		randomBox.innerHTML = '';
+	
+		const shapes = ['circle', 'triangle', 'square'];
+		const colors = ['red', 'blue', 'green']; // Add more colors if needed
+	
+		// Randomly choose the target shape and color for the CAPTCHA
+		const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
+		const targetColor = colors[Math.floor(Math.random() * colors.length)];
+	
+		// Create an array with 16 elements
+		const grid = Array(16).fill(null);
+	
+		// Ensure that the target shape and color appear at least 3 times
+		let targetCount = 0;
+		while (targetCount < 3) {
+			const index = Math.floor(Math.random() * grid.length);
+			if (grid[index] === null) {
+				grid[index] = { shape: targetShape, color: targetColor };
+				targetCount++;
 			}
-            shapeElement.addEventListener('click', function () {
-                shapeElement.classList.toggle('selected');
-            });
-            randomBox.appendChild(shapeElement);
+		}
+	
+		// Fill remaining slots with random shapes and colors, ensuring half are blank
+		const remainingSlots = grid.filter(item => item === null);
+		const totalRemaining = remainingSlots.length;
+	
+		for (let i = 0; i < totalRemaining; i++) {
+			if (i < 8) {
+				// Fill the first half with random shapes and colors
+				const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+				const randomColor = colors[Math.floor(Math.random() * colors.length)];
+				grid[grid.indexOf(remainingSlots[i])] = { shape: randomShape, color: randomColor };
+			} else {
+				// Leave the second half blank
+				grid[grid.indexOf(remainingSlots[i])] = null;
+			}
+		}
+	
+		// Shuffle the grid array
+		grid.sort(() => Math.random() - 0.5);
+	
+		// Populate the randomBox with shapes and colors
+		grid.forEach((item, index) => {
+			const shapeElement = document.createElement('div');
+			shapeElement.classList.add('shape');
+			if (item) {
+				shapeElement.classList.add(item.shape);
+				if (item.shape === 'triangle') {
+					shapeElement.style.borderBottom = `40px solid ${item.color}`;
+				} else {
+					shapeElement.style.backgroundColor = item.color;
+				}
+			} else {
+				// Leave the shape blank
+				shapeElement.classList.add('blank');
+			}
 
-			// Update the instruction text to reflect the selected shape and color
-			const instruction = document.getElementById('instruction');
-			const color = document.getElementById('color');
-			const shape = document.getElementById('shape');
-			instruction.textContent = `Select all the `;
-			color.textContent = `${targetColor.toUpperCase()}`;
-			shape.textContent = `${targetShape.toUpperCase()}`;
-			
-			// Store the target shape and color for validation
-			window.targetShape = targetShape;
-			window.targetColor = targetColor;
-        }
-    };
+			randomBox.appendChild(shapeElement);
+		});
+	
+		// Update the instruction text to reflect the selected shape and color
+		const instruction = document.getElementById('instruction');
+		const color = document.getElementById('color');
+		const shape = document.getElementById('shape');
+		instruction.textContent = `Select all the `;
+		color.textContent = `${targetColor.toUpperCase()}`;
+		shape.textContent = `${targetShape.toUpperCase()}`;
+		
+		// Store the target shape and color for validation
+		window.targetShape = targetShape;
+		window.targetColor = targetColor;
+	};	
 
 	const positionRandomBox = (randomBox) => {
         const container = document.querySelector('.camera-container');
@@ -447,7 +481,11 @@ function Captcha({handleValidated, maxAttempts})	 {
             <div className="camera-container">
 				{/* Random Shapes Container */}
 				<canvas ref={screenshotCanvasRef} onClick={handleCanvasClick} id="screenshotCanvas" className='screenshot' style={{ 'display': isScreenshotTaken ? 'unset' : 'none' }}></canvas>
-				<div className="grid" ref={randomBoxRef} id="randomBox" style={{ display: isScreenshotTaken ? 'none' : ''}}></div>
+				{	
+					isScreenshotTaken
+					? <></>
+					: <div className="grid" ref={randomBoxRef} id="randomBox"></div>
+				}
 				
 				{/* Camera stream */}
                 <video ref={videoRef} autoPlay playsInline style={{ 'display': !isScreenshotTaken ? 'unset' : 'none' }}></video>
