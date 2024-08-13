@@ -161,15 +161,13 @@ function Captcha({handleValidated, maxAttempts})	 {
 
 	const takeScreenshot = () => {
 		addShapes();
-
+	
 		const video = videoRef.current;
 		const randomBox = randomBoxRef.current;
 		const screenshotCanvas = screenshotCanvasRef.current;
 	
 		const videoWidth = video.videoWidth;
 		const videoHeight = video.videoHeight;
-	
-		const videoRect = video.getBoundingClientRect();
 	
 		// Set canvas size to match video size
 		screenshotCanvas.width = videoWidth;
@@ -178,7 +176,7 @@ function Captcha({handleValidated, maxAttempts})	 {
 		// Draw the video frame to canvas
 		const ctx = screenshotCanvas.getContext('2d');
 		ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
-
+	
 		// Draw the shapes from randomBox
 		const shapes = randomBox.querySelectorAll('.shape');
 		shapes.forEach(shape => {
@@ -189,12 +187,13 @@ function Captcha({handleValidated, maxAttempts})	 {
 	
 			// Get x and y axis relative to randomBox position within the video frame
 			const shapeRect = shape.getBoundingClientRect();
-			const offsetX = (shapeRect.x) - (videoRect.x);
-			const offsetY = (shapeRect.y) - (videoRect.y);
+			const videoRect = video.getBoundingClientRect();
+			const offsetX = shapeRect.x - videoRect.x;
+			const offsetY = shapeRect.y - videoRect.y;
 	
 			// Convert to canvas coordinates and add a gap relative to the video frame
-			const x = offsetX + 20
-			const y = offsetY + 20
+			const x = offsetX + 20;
+			const y = offsetY + 20;
 	
 			let size, color;
 			if (shapeType === 'triangle') {
@@ -210,7 +209,7 @@ function Captcha({handleValidated, maxAttempts})	 {
 				color = style.backgroundColor;
 				drawSquare(ctx, x, y, size, color);
 			}
-
+	
 			const getColorInRGB = (colorName) => {
 				const colorMap = {
 					"blue": "rgb(0, 0, 255)",
@@ -221,48 +220,121 @@ function Captcha({handleValidated, maxAttempts})	 {
 				
 				return colorMap[colorName.toLowerCase()] || null;
 			};
-
+	
 			const currentColor = document.getElementById('color').innerText;
 			const currentColorRGB = getColorInRGB(currentColor);
-			const currentShape = document.getElementById('shape').innerText
-
+			const currentShape = document.getElementById('shape').innerText;
+	
 			// Check if the current shape matches the selected shape type and color
 			if (shapeType === currentShape.toLowerCase() && color === currentColorRGB) {
-				setPointsLocation(prevPoints => [...prevPoints, {type: currentShape.toLowerCase(), size: size, x, y }]);
+				setPointsLocation(prevPoints => [...prevPoints, { type: currentShape.toLowerCase(), size: size, x, y }]);
 			}
 		});
 	
+		// Draw the grid only around the shapes
+		drawGridAroundShapes(ctx, shapes);
+	
 		setIsScreenshotTaken(true);
-	};
+	};	
+	
+	// Function to draw a grid around the shapes
+	const drawGridAroundShapes = (ctx, shapes) => {
+		ctx.save(); // Save the current context state
+		ctx.globalAlpha = 0.5; // Set opacity to 50%
+		
+		ctx.strokeStyle = '#fff'; // Grid line color
+		ctx.lineWidth = 2; // Grid line width
+	
+		// Convert NodeList to array
+		const shapeArray = Array.from(shapes);
+	
+		// Determine the bounding box around all shapes
+		const bounds = shapeArray.reduce((acc, shape) => {
+			const rect = shape.getBoundingClientRect();
+			return {
+				left: Math.min(acc.left, rect.left),
+				top: Math.min(acc.top, rect.top),
+				right: Math.max(acc.right, rect.right),
+				bottom: Math.max(acc.bottom, rect.bottom),
+			};
+		}, {
+			left: Infinity,
+			top: Infinity,
+			right: -Infinity,
+			bottom: -Infinity,
+		});
+	
+		// Adjust for video offset
+		const video = videoRef.current;
+		const videoRect = video.getBoundingClientRect();
+		const offsetX = videoRect.x;
+		const offsetY = videoRect.y;
+	
+		// Calculate padding and grid cell size
+		const padding = 27;
+		const cellWidth = (bounds.right - bounds.left + 2 * padding) / 4; // 4 columns
+		const cellHeight = (bounds.bottom - bounds.top + 2 * padding) / 4; // 4 rows
+	
+		// Draw vertical lines to divide the box into 4 columns
+		for (let i = 0; i <= 4; i++) {
+			const x = bounds.left - offsetX - padding + i * cellWidth;
+			ctx.beginPath();
+			ctx.moveTo(x, bounds.top - offsetY - padding);
+			ctx.lineTo(x, bounds.bottom - offsetY + padding);
+			ctx.stroke();
+		}
+	
+		// Draw horizontal lines to divide the box into 4 rows
+		for (let i = 0; i <= 4; i++) {
+			const y = bounds.top - offsetY - padding + i * cellHeight;
+			ctx.beginPath();
+			ctx.moveTo(bounds.left - offsetX - padding, y);
+			ctx.lineTo(bounds.right - offsetX + padding, y);
+			ctx.stroke();
+		}
+	
+		ctx.restore(); // Restore the context state
+	};	
 
+	// Function to draw a triangle
 	const drawTriangle = (ctx, x, y, size, color) => {
 		ctx.save(); // Save the current context state
 		ctx.globalAlpha = 0.5; // Set opacity to 50%
+
 		ctx.beginPath();
 		ctx.moveTo(x, y - size);
 		ctx.lineTo(x - size, y + size);
 		ctx.lineTo(x + size, y + size);
 		ctx.closePath();
+
 		ctx.fillStyle = color;
 		ctx.fill();
+
 		ctx.restore(); // Restore the context state
 	};
-	
+
+	// Function to draw a circle
 	const drawCircle = (ctx, x, y, radius, color) => {
 		ctx.save(); // Save the current context state
 		ctx.globalAlpha = 0.5; // Set opacity to 50%
+
 		ctx.beginPath();
 		ctx.arc(x, y, radius, 0, 2 * Math.PI);
+
 		ctx.fillStyle = color;
 		ctx.fill();
+
 		ctx.restore(); // Restore the context state
 	};
-	
+
+	// Function to draw a square
 	const drawSquare = (ctx, x, y, size, color) => {
 		ctx.save(); // Save the current context state
 		ctx.globalAlpha = 0.5; // Set opacity to 50%
+
 		ctx.fillStyle = color;
 		ctx.fillRect(x - size / 2, y - size / 2, size, size);
+
 		ctx.restore(); // Restore the context state
 	};
 
