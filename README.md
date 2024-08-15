@@ -58,6 +58,3 @@
 - Implement vertical and horizontal lines inside the box to enhance the visual presentation.
 
 ---
-
-This expanded description provides a clear and comprehensive overview of each requirement for the custom CAPTCHA component, detailing implementation, anti-automation measures, test coverage, and styling improvements.
-
