@@ -1,45 +1,63 @@
-# ReactJS Frontend code test
+# ReactJS Frontend Code Test
 
 ## Setup
-1. npm install
-2. `npm run dev` to start the project
-3. Do some test
 
-## Task 1: Custom CAPTCHA component
-1. CAPTCHA validation steps:
-    a. The user is presented with the video stream from the selfie camera
-    b. There is a square-shaped area inside the video stream which constantly changes
-    its location with randomized algorithm
-    c. The user clicks the “Continue” button to proceed to the next validation step
-    d. Once the “Continue” button is clicked, the current location of the square-shaped
-    area inside the video stream should be locked and the current image from
-    camera should be captured
-    e. The next screen presents the captured image from the previous step with the
-    locked square area being divided into sectors by several horizontal and vertical
-    lines
-    f. Half of the sectors in the area (randomly selected) should have watermarks in the
-    form of one of the three shapes: triangle, square or circle.
-    g. The user is asked to select sectors which contain watermarks with one of the
-    chosen shape (triangle, square or circle), this choice is randomized
-    h. The user clicks the “Validate” button to proceed to the validation result screen
-    i. The validation result screen informs the user whether they passed the CAPTCHA
-    test or not
+1. **Install Dependencies**:
+   - Run the following command to install all necessary dependencies:
+     ```bash
+     npm install
+     ```
 
-### Requirement 1: I added a fixed sized video frame that will accomodate the camera view of the user and inside I placed a box with random position as showned in the mock up. Once, the continue button is clicked it will then lock the box to it's current position and add shapes based on the mock up provided
+2. **Start the Project**:
+   - Use the following command to start the development server:
+     ```bash
+     npm run dev
+     ```
 
-2. It is essential to take all the possible measures to make sure that the validation puzzle is
-protected from the being resolved by computerized tools and thus it can be reliably used
-to tell the humans and computers apart
+3. **Testing**:
+   - Perform tests to ensure the application is working as expected.
 
-### Requirement 2: To prevent automation on the custom captcha I lowered down the opacity of the shapes and limit the clicked area within the shapes only
+## Task 1: Custom CAPTCHA Component
 
-3. The custom CAPTCHA component should have the reasonable automated test
-coverage (but it is not required to implement the automated tests which resolve the
-puzzle)
+### CAPTCHA Validation Steps
 
-### Requirement 3: I created an automation test using python but it is not yet working properly but it will capture the image and detect the position of the shapes with corresponding color described in the instruction (e.g Select all Red Triangle) and it will click the positions and click the validation button
+1. **Video Stream and Interactive Area**:
+   - Present the user with a video stream from their webcam.
+   - Display a square-shaped area within the video stream. This area should continually change its location using a randomized algorithm.
 
-4. It is allowed to improve the styling and overall look of the custom CAPTCHA component
-as long as it is still within the guidelines provided in the Mockups
+2. **Capture and Validation**:
+   - When the user clicks the "Continue" button, lock the position of the square-shaped area and capture the current image from the camera.
+   - On the next screen, display the captured image with the locked square area divided into multiple sectors using horizontal and vertical lines.
 
-### Requirement 4: I added a random color to each shape and change the opacity. Also, the rquirements for adding a vertical and horizontal lines inside the box is also implemented
+3. **Watermark Placement and User Interaction**:
+   - Randomly place watermarks in the form of one of three shapes (triangle, square, or circle) in half of the sectors within the square area.
+   - Randomize the choice of shape that the user needs to select.
+   - Provide a "Validate" button for the user to proceed to the validation result screen.
+
+4. **Validation Result**:
+   - Display whether the user passed or failed the CAPTCHA test on the validation result screen.
+
+### Requirement 1: Implementation Details
+
+- A fixed-sized video frame accommodates the camera view of the user.
+- A box with a random position is placed within the video frame, as depicted in the mockups.
+- Once the "Continue" button is clicked, the box's position is locked, and shapes are added according to the mockup.
+
+### Requirement 2: Anti-Automation Measures
+
+- To prevent automated tools from bypassing the CAPTCHA, reduce the opacity of the shapes and restrict the clickable area to within the shapes only.
+
+### Requirement 3: Automated Test Coverage
+
+- Implement reasonable automated test coverage for the custom CAPTCHA component. While resolving the puzzle via automated tests is not required, capturing images and detecting shape positions with the corresponding color should be part of the tests. Note that an automated test using Python is under development, which captures images, detects shapes, and interacts with the CAPTCHA.
+
+### Requirement 4: Styling and Enhancements
+
+- Improve the styling and overall appearance of the custom CAPTCHA component, ensuring it remains consistent with the guidelines provided in the mockups.
+- Add random colors to each shape and adjust their opacity.
+- Implement vertical and horizontal lines inside the box to enhance the visual presentation.
+
+---
+
+This expanded description provides a clear and comprehensive overview of each requirement for the custom CAPTCHA component, detailing implementation, anti-automation measures, test coverage, and styling improvements.
+
