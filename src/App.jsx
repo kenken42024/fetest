@@ -31,17 +31,17 @@ function App() {
         <>	
 			{
 				result !== null
-				? 	<Result 
-						result={result}
-						maxAttempts={maxAttempts}
-						attempts={attempts}
-						handleRetry={handleRetry}
-						isBlocked={blocked}
-					/>
-				:	<Captcha
-						handleValidated={handleValidation}
-						maxAttempts={maxAttempts}
-					/>
+					? 	<Result 
+							result={result}
+							maxAttempts={maxAttempts}
+							attempts={attempts}
+							handleRetry={handleRetry}
+							isBlocked={blocked}
+						/>
+					:	<Captcha
+							handleValidated={handleValidation}
+							maxAttempts={maxAttempts}
+						/>
 			}
         </>
     );

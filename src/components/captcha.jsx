@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import '../App.css';
 
-function Captcha({handleValidated, maxAttempts})	 {
+function Captcha({ handleValidated, maxAttempts }) {
 	// const [mouseMovement, setMouseMovement] = useState(0);
-    const [isScreenshotTaken, setIsScreenshotTaken] = useState(false);
-    const videoRef = useRef(null);
-    const randomBoxRef = useRef(null);
-    const screenshotCanvasRef = useRef(null);
+	const [isScreenshotTaken, setIsScreenshotTaken] = useState(false);
+	const videoRef = useRef(null);
+	const randomBoxRef = useRef(null);
+	const screenshotCanvasRef = useRef(null);
 	const [pointsLocation, setPointsLocation] = useState([])
 	const [clickedPoints, setClickedPoints] = useState([])
 	const [xClickedPoints, setXClickedPoints] = useState([])
@@ -36,49 +36,49 @@ function Captcha({handleValidated, maxAttempts})	 {
 			} else {
 				console.error('Camera error');
 			}
-			
+
 			positionRandomBox(randomBox);
 		}
 	}, [])
 
 	useEffect(() => {
 		// Stop Camera if the screenshot is taken
-		if(isScreenshotTaken) {
+		if (isScreenshotTaken) {
 			const video = videoRef.current
 			if (video && video.srcObject) {
 				video.srcObject.getTracks().forEach(track => track.stop());
 			}
 		}
 
-        // Set interval to reposition the box if screenshot not taken
-        const intervalId = setInterval(() => {
-            if (!isScreenshotTaken) {
+		// Set interval to reposition the box if screenshot not taken
+		const intervalId = setInterval(() => {
+			if (!isScreenshotTaken) {
 				const video = videoRef.current;
-                positionRandomBox(randomBox);
-            } else {
+				positionRandomBox(randomBox);
+			} else {
 				clearInterval(intervalId); // Stop the interval when screenshot is taken
-            }
-        }, 2000);
+			}
+		}, 2000);
 
-        return () => {
-            clearInterval(intervalId);
-        };
+		return () => {
+			clearInterval(intervalId);
+		};
 	}, [isScreenshotTaken])
 
 	const addShapes = () => {
 		const randomBox = document.getElementById('randomBox');
 		randomBox.innerHTML = '';
-	
+
 		const shapes = ['circle', 'triangle', 'square'];
-		const colors = ['red', 'blue', 'green']; // Add more colors if needed
-	
+		const colors = ['red', 'blue', 'green'];
+
 		// Randomly choose the target shape and color for the CAPTCHA
 		const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
 		const targetColor = colors[Math.floor(Math.random() * colors.length)];
-	
+
 		// Create an array with 16 elements
 		const grid = Array(16).fill(null);
-	
+
 		// Ensure that the target shape and color appear at least 3 times
 		let targetCount = 0;
 		while (targetCount < 3) {
@@ -88,11 +88,11 @@ function Captcha({handleValidated, maxAttempts})	 {
 				targetCount++;
 			}
 		}
-	
+
 		// Fill remaining slots with random shapes and colors, ensuring half are blank
 		const remainingSlots = grid.filter(item => item === null);
 		const totalRemaining = remainingSlots.length;
-	
+
 		for (let i = 0; i < totalRemaining; i++) {
 			if (i < 8) {
 				// Fill the first half with random shapes and colors
@@ -104,10 +104,10 @@ function Captcha({handleValidated, maxAttempts})	 {
 				grid[grid.indexOf(remainingSlots[i])] = null;
 			}
 		}
-	
+
 		// Shuffle the grid array
 		grid.sort(() => Math.random() - 0.5);
-	
+
 		// Populate the randomBox with shapes and colors
 		grid.forEach((item, index) => {
 			const shapeElement = document.createElement('div');
@@ -126,7 +126,7 @@ function Captcha({handleValidated, maxAttempts})	 {
 
 			randomBox.appendChild(shapeElement);
 		});
-	
+
 		// Update the instruction text to reflect the selected shape and color
 		const instruction = document.getElementById('instruction');
 		const color = document.getElementById('color');
@@ -134,67 +134,67 @@ function Captcha({handleValidated, maxAttempts})	 {
 		instruction.textContent = `Select all the `;
 		color.textContent = `${targetColor.toUpperCase()}`;
 		shape.textContent = `${targetShape.toUpperCase()}`;
-		
+
 		// Store the target shape and color for validation
 		window.targetShape = targetShape;
 		window.targetColor = targetColor;
-	};	
+	};
 
 	const positionRandomBox = (randomBox) => {
-        const container = document.querySelector('.camera-container');
-        const containerWidth = container.offsetWidth;
-        const containerHeight = container.offsetHeight;
-        const boxWidth = randomBox.offsetWidth;
-        const boxHeight = randomBox.offsetHeight;
+		const container = document.querySelector('.camera-container');
+		const containerWidth = container.offsetWidth;
+		const containerHeight = container.offsetHeight;
+		const boxWidth = randomBox.offsetWidth;
+		const boxHeight = randomBox.offsetHeight;
 
-        const maxXRange = 255;  // Constrain left to range 0 to 255px
-        const maxYRange = 94;   // Constrain top to range 0 to 94px
-        const maxX = Math.min(maxXRange, containerWidth - boxWidth);
-        const maxY = Math.min(maxYRange, containerHeight - boxHeight);
+		const maxXRange = 255;  // Constrain left to range 0 to 255px
+		const maxYRange = 94;   // Constrain top to range 0 to 94px
+		const maxX = Math.min(maxXRange, containerWidth - boxWidth);
+		const maxY = Math.min(maxYRange, containerHeight - boxHeight);
 
-        const randomX = Math.random() * maxX;
-        const randomY = Math.random() * maxY;
+		const randomX = Math.random() * maxX;
+		const randomY = Math.random() * maxY;
 
-        randomBox.style.left = `${randomX}px`;
-        randomBox.style.top = `${randomY}px`;
-    };
+		randomBox.style.left = `${randomX}px`;
+		randomBox.style.top = `${randomY}px`;
+	};
 
 	const takeScreenshot = () => {
 		addShapes();
-	
+
 		const video = videoRef.current;
 		const randomBox = randomBoxRef.current;
 		const screenshotCanvas = screenshotCanvasRef.current;
-	
+
 		const videoWidth = video.videoWidth;
 		const videoHeight = video.videoHeight;
-	
+
 		// Set canvas size to match video size
 		screenshotCanvas.width = videoWidth;
 		screenshotCanvas.height = videoHeight;
-	
+
 		// Draw the video frame to canvas
 		const ctx = screenshotCanvas.getContext('2d');
 		ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
-	
+
 		// Draw the shapes from randomBox
 		const shapes = randomBox.querySelectorAll('.shape');
 		shapes.forEach(shape => {
 			const style = window.getComputedStyle(shape);
 			const shapeType = shape.classList.contains('triangle') ? 'triangle' :
-							  shape.classList.contains('circle') ? 'circle' :
-							  shape.classList.contains('square') ? 'square' : null;
-	
+				shape.classList.contains('circle') ? 'circle' :
+					shape.classList.contains('square') ? 'square' : null;
+
 			// Get x and y axis relative to randomBox position within the video frame
 			const shapeRect = shape.getBoundingClientRect();
 			const videoRect = video.getBoundingClientRect();
 			const offsetX = shapeRect.x - videoRect.x;
 			const offsetY = shapeRect.y - videoRect.y;
-	
+
 			// Convert to canvas coordinates and add a gap relative to the video frame
 			const x = offsetX + 20;
 			const y = offsetY + 20;
-	
+
 			let size, color;
 			if (shapeType === 'triangle') {
 				size = parseInt(style.borderBottomWidth, 10); // Triangle height from border-bottom
@@ -209,45 +209,44 @@ function Captcha({handleValidated, maxAttempts})	 {
 				color = style.backgroundColor;
 				drawSquare(ctx, x, y, size, color);
 			}
-	
+
 			const getColorInRGB = (colorName) => {
 				const colorMap = {
 					"blue": "rgb(0, 0, 255)",
 					"red": "rgb(255, 0, 0)",
 					"green": "rgb(0, 128, 0)"
-					// Add more colors if needed
 				};
-				
+
 				return colorMap[colorName.toLowerCase()] || null;
 			};
-	
+
 			const currentColor = document.getElementById('color').innerText;
 			const currentColorRGB = getColorInRGB(currentColor);
 			const currentShape = document.getElementById('shape').innerText;
-	
+
 			// Check if the current shape matches the selected shape type and color
 			if (shapeType === currentShape.toLowerCase() && color === currentColorRGB) {
 				setPointsLocation(prevPoints => [...prevPoints, { type: currentShape.toLowerCase(), size: size, x, y }]);
 			}
 		});
-	
+
 		// Draw the grid only around the shapes
 		drawGridAroundShapes(ctx, shapes);
-	
+
 		setIsScreenshotTaken(true);
-	};	
-	
+	};
+
 	// Function to draw a grid around the shapes
 	const drawGridAroundShapes = (ctx, shapes) => {
 		ctx.save(); // Save the current context state
 		ctx.globalAlpha = 0.5; // Set opacity to 50%
-		
+
 		ctx.strokeStyle = '#fff'; // Grid line color
 		ctx.lineWidth = 2; // Grid line width
-	
+
 		// Convert NodeList to array
 		const shapeArray = Array.from(shapes);
-	
+
 		// Determine the bounding box around all shapes
 		const bounds = shapeArray.reduce((acc, shape) => {
 			const rect = shape.getBoundingClientRect();
@@ -263,18 +262,18 @@ function Captcha({handleValidated, maxAttempts})	 {
 			right: -Infinity,
 			bottom: -Infinity,
 		});
-	
+
 		// Adjust for video offset
 		const video = videoRef.current;
 		const videoRect = video.getBoundingClientRect();
 		const offsetX = videoRect.x;
 		const offsetY = videoRect.y;
-	
+
 		// Calculate padding and grid cell size
 		const padding = 27;
 		const cellWidth = (bounds.right - bounds.left + 2 * padding) / 4; // 4 columns
 		const cellHeight = (bounds.bottom - bounds.top + 2 * padding) / 4; // 4 rows
-	
+
 		// Draw vertical lines to divide the box into 4 columns
 		for (let i = 0; i <= 4; i++) {
 			const x = bounds.left - offsetX - padding + i * cellWidth;
@@ -283,7 +282,7 @@ function Captcha({handleValidated, maxAttempts})	 {
 			ctx.lineTo(x, bounds.bottom - offsetY + padding);
 			ctx.stroke();
 		}
-	
+
 		// Draw horizontal lines to divide the box into 4 rows
 		for (let i = 0; i <= 4; i++) {
 			const y = bounds.top - offsetY - padding + i * cellHeight;
@@ -292,9 +291,9 @@ function Captcha({handleValidated, maxAttempts})	 {
 			ctx.lineTo(bounds.right - offsetX + padding, y);
 			ctx.stroke();
 		}
-	
+
 		ctx.restore(); // Restore the context state
-	};	
+	};
 
 	// Function to draw a triangle
 	const drawTriangle = (ctx, x, y, size, color) => {
@@ -341,7 +340,7 @@ function Captcha({handleValidated, maxAttempts})	 {
 	const handleCanvasClick = (event) => {
 		const canvas = screenshotCanvasRef.current;
 		const rect = canvas.getBoundingClientRect();
-		
+
 		// Calculate the x and y coordinates of the click relative to the canvas
 		const x = event.clientX - rect.left;
 		const y = event.clientY - rect.top;
@@ -353,10 +352,10 @@ function Captcha({handleValidated, maxAttempts})	 {
 		const shapeClicked = pointsLocation.find(shape => {
 			if (shape.type === 'square') {
 				return isPointInSquare(clickedPoint, shape);
-			} 
+			}
 			else if (shape.type === 'circle') {
 				return isPointInCircle(clickedPoint, shape);
-			} 
+			}
 			else if (shape.type === 'triangle') {
 				return isPointInTriangle(clickedPoint, shape);
 			}
@@ -370,17 +369,17 @@ function Captcha({handleValidated, maxAttempts})	 {
 		ctx.arc(x, y, 10, 0, 2 * Math.PI);
 		ctx.fillStyle = 'orange';
 		ctx.fill();
-		
+
 		if (shapeClicked) {
-			let  temp = [...clickedPoints]
+			let temp = [...clickedPoints]
 			const alreadySelected = clickedPoints.find(shape => {
 				if (shape.x === shapeClicked.x && shape.y === shapeClicked.y) {
 					return true
-				} 
+				}
 				return false;
 			});
 
-			if(!alreadySelected) {
+			if (!alreadySelected) {
 				temp.push(shapeClicked)
 				setClickedPoints(temp)
 			}
@@ -401,18 +400,17 @@ function Captcha({handleValidated, maxAttempts})	 {
 			point.y <= shape.y + halfSize
 		);
 	};
-	
+
 	const isPointInCircle = (point, shape) => {
 		const distance = Math.sqrt(
 			Math.pow(point.x - shape.x, 2) + Math.pow(point.y - shape.y, 2)
 		);
 		return distance <= shape.size;
 	};
-	
+
 	const isPointInTriangle = (point, shape) => {
 		const { x, y, size } = shape;
-	
-		// Calculate the vertices of the equilateral triangle
+
 		const height = Math.sqrt(3) / 2 * size;
 		const x1 = x - size / 2;
 		const y1 = y + height / 2;
@@ -420,36 +418,37 @@ function Captcha({handleValidated, maxAttempts})	 {
 		const y2 = y + height / 2;
 		const x3 = x;
 		const y3 = y - height / 2;
-	
+
 		// Calculate the area of the triangle
 		const areaOrig = Math.abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2);
-		
+
 		let area1 = 0
 		let area2 = 0
 		let area3 = 0
+
 		// Calculate the areas of the triangles formed by the point and each pair of vertices
 		area1 = Math.abs((point.x * (y2 - y3) + x2 * (y3 - point.y) + x3 * (point.y - y2)) / 2);
 		area2 = Math.abs((x1 * (point.y - y3) + point.x * (y3 - y1) + x3 * (y1 - point.y)) / 2);
 		area3 = Math.abs((x1 * (y2 - point.y) + x2 * (point.y - y1) + point.x * (y1 - y2)) / 2);
-		
+
 		// console.log((area1 + area2 + area3).toFixed(0), areaOrig)
 		// Check if the point is inside the triangle
 		return (area1 + area2 + area3).toFixed(0) === areaOrig.toFixed(0);
 	};
 
-    const validateCaptcha = () => {
+	const validateCaptcha = () => {
 		const result = document.getElementById('result');
 		const blockUntilCookie = getCookie('blockUntil');
 		let blockUntil = blockUntilCookie ? new Date(blockUntilCookie) : null;
-	
+
 		// Retrieve the attempts value from cookies
 		let attemp = parseInt(getCookie('attempts')) || 0;
-	
+
 		// Check if the user is currently blocked
 		if (blockUntil && new Date() < blockUntil) {
 			return;
 		}
-	
+
 		if (clickedPoints.length > 0 && clickedPoints.length === pointsLocation.length && xClickedPoints.length <= 0) {
 			deleteCookie('blockUntil'); // Reset block status on success
 			deleteCookie('attempts'); // Reset attempts on success
@@ -458,39 +457,39 @@ function Captcha({handleValidated, maxAttempts})	 {
 		} else {
 			attemp++;
 			setCookie('attempts', attemp, 5); // Store the updated attempts value
-	
+
 			if (attemp >= maxAttempts) {
 				blockUntil = new Date(new Date().getTime() + 5 * 60 * 1000); // Block for 5 minutes
 				setCookie('blockUntil', blockUntil.toUTCString(), 5);
 			}
-	
+
 			setIsValidated(0);
 			handleValidated(0, attemp);
 		}
-	};	
+	};
 
 	const handleContinue = () => {
 		setPointsLocation([])
 		const video = videoRef.current
-        if (!isScreenshotTaken) {
+		if (!isScreenshotTaken) {
 			takeScreenshot();
-			
+
 			// Stop the video stream
 			video.srcObject.getTracks().forEach(track => track.stop());
-        } else {
+		} else {
 			const randomBox = randomBoxRef.current
 			randomBox.innerHTML = ""
 			navigator.mediaDevices.getUserMedia({ video: true })
-                .then((stream) => {
-                    video.srcObject = stream;
-                })
-                .catch((error) => {
-                    console.error('Error accessing the camera:', error);
-                });
+				.then((stream) => {
+					video.srcObject = stream;
+				})
+				.catch((error) => {
+					console.error('Error accessing the camera:', error);
+				});
 
-            setIsScreenshotTaken(false);
-        }
-    };
+			setIsScreenshotTaken(false);
+		}
+	};
 
 	const handleRetry = () => {
 		// Clear results
@@ -516,7 +515,7 @@ function Captcha({handleValidated, maxAttempts})	 {
 		setPointsLocation([])
 		setIsScreenshotTaken(false)
 		setIsValidated(null)
-    };
+	};
 
 	// This is for blocking the user for 5 minutes before they can try again
 	const setCookie = (name, value, minutes) => {
@@ -543,42 +542,40 @@ function Captcha({handleValidated, maxAttempts})	 {
 		document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 	};
 
-    return (
-        <>	
+	return (
+		<>
 			<div id="shapeSelector">
-                <span id='instruction'>Take a Selfie</span>&nbsp;<span id="color"></span>&nbsp;<span id="shape"></span>
-            </div>
+				<span id='instruction'>Take a Selfie</span>&nbsp;<span id="color"></span>&nbsp;<span id="shape"></span>
+			</div>
 
-			{/* Camera Container for the user to see the position of the box where the shapes should be selected */}
-            <div className="camera-container">
-				{/* Random Shapes Container */}
+			<div className="camera-container">
 				<canvas ref={screenshotCanvasRef} onClick={handleCanvasClick} id="screenshotCanvas" className='screenshot' style={{ 'display': isScreenshotTaken ? 'unset' : 'none' }}></canvas>
-				{	
+
+				{
 					isScreenshotTaken
-					? <></>
-					: <div className="grid" ref={randomBoxRef} id="randomBox"></div>
+						? 	<></>
+						: 	<div className="grid" ref={randomBoxRef} id="randomBox"></div>
 				}
-				
-				{/* Camera stream */}
-                <video ref={videoRef} autoPlay playsInline style={{ 'display': !isScreenshotTaken ? 'unset' : 'none' }}></video>
-            </div>
+
+				<video ref={videoRef} autoPlay playsInline style={{ 'display': !isScreenshotTaken ? 'unset' : 'none' }}></video>
+			</div>
 
 			{
 				isScreenshotTaken
-				?	<div className='gap-2'>
-						<button disabled={clickedPoints.length <= 0 && xClickedPoints.length <= 0 } onClick={validateCaptcha} id="continueButton">Validate</button>&nbsp;
-						{
-							isValidated === null && pointsLocation.length > 1
-							?	<></>
-							: 	<>
-									<button onClick={() => { handleRetry() }} id="continueButton">{ pointsLocation.length > 1 ? "Retry" : "Skip" }</button>
-								</>
-						}
-					</div>
-				:	<button onClick={handleContinue} id="continueButton">Continue</button>
+					? 	<div className='gap-2'>
+							<button disabled={clickedPoints.length <= 0 && xClickedPoints.length <= 0} onClick={validateCaptcha} id="continueButton">Validate</button>&nbsp;
+							{
+								isValidated === null && pointsLocation.length > 1
+									? 	<></>
+									: 	<>
+											<button onClick={() => { handleRetry() }} id="continueButton">{pointsLocation.length > 1 ? "Retry" : "Skip"}</button>
+										</>
+							}
+						</div>
+					: 	<button onClick={handleContinue} id="continueButton">Continue</button>
 			}
-        </>
-    );
+		</>
+	);
 }
 
 export default Captcha;

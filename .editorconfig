@@ -1,0 +1,6 @@
+# Editor configuration for enforcing 4-space indents
+root = true
+
+[*.{jsx, json, html, css}]
+indent_style = space
+indent_size = 4
